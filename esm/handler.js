@@ -1,7 +1,9 @@
-import udomdiff from 'udomdiff';
-import { empty, gPD, isArray, set } from './utils.js';
-import { diffFragment } from './persistent-fragment.js';
-import drop from './range.js';
+import udomdiff from "udomdiff";
+import { empty, gPD, isArray, set } from "./utils.js";
+import { diffFragment } from "./persistent-fragment.js";
+import drop from "./range.js";
+
+const PROPS_TARGET_PROPERTY_KEY = "$props";
 
 const setAttribute = (element, name, value) =>
   element.setAttribute(name, value);
@@ -11,8 +13,7 @@ const setAttribute = (element, name, value) =>
  * @param {string} name
  * @returns {void}
  */
-export const removeAttribute = (element, name) =>
-  element.removeAttribute(name);
+export const removeAttribute = (element, name) => element.removeAttribute(name);
 
 /**
  * @template T
@@ -23,7 +24,7 @@ export const removeAttribute = (element, name) =>
 export const aria = (element, value) => {
   for (const key in value) {
     const $ = value[key];
-    const name = key === 'role' ? key : `aria-${key}`;
+    const name = key === "role" ? key : `aria-${key}`;
     if ($ == null) removeAttribute(element, name);
     else setAttribute(element, name, $);
   }
@@ -41,7 +42,7 @@ let listeners;
  */
 export const at = (element, value, name) => {
   name = name.slice(1);
-  if (!listeners) listeners = new WeakMap;
+  if (!listeners) listeners = new WeakMap();
   const known = listeners.get(element) || set(listeners, element, {});
   let current = known[name];
   if (current && current[0]) element.removeEventListener(name, ...current);
@@ -52,7 +53,7 @@ export const at = (element, value, name) => {
 };
 
 /** @type {WeakMap<Node, Element | import("./persistent-fragment.js").PersistentFragment>} */
-const holes = new WeakMap;
+const holes = new WeakMap();
 
 /**
  * @template T
@@ -64,15 +65,15 @@ export const hole = (detail, value) => {
   const { t: node, n: hole } = detail;
   let nullish = false;
   switch (typeof value) {
-    case 'object':
+    case "object":
       if (value !== null) {
         (hole || node).replaceWith((detail.n = value.valueOf()));
         break;
       }
-    case 'undefined':
+    case "undefined":
       nullish = true;
     default:
-      node.data = nullish ? '' : value;
+      node.data = nullish ? "" : value;
       if (hole) {
         detail.n = null;
         hole.replaceWith(node);
@@ -88,9 +89,8 @@ export const hole = (detail, value) => {
  * @param {T} value
  * @returns {T}
  */
-export const className = (element, value) => maybeDirect(
-  element, value, value == null ? 'class' : 'className'
-);
+export const className = (element, value) =>
+  maybeDirect(element, value, value == null ? "class" : "className");
 
 /**
  * @template T
@@ -118,12 +118,13 @@ export const direct = (ref, value, name) => (ref[name] = value);
 
 /**
  * @template T
- * @param {Element} element
+ * @param {HTMLElement} ref
  * @param {T} value
  * @param {string} name
  * @returns {T}
  */
-export const dot = (element, value, name) => direct(element, value, name.slice(1));
+export const directProps = (ref, value, name) =>
+  (ref[PROPS_TARGET_PROPERTY_KEY][name] = value);
 
 /**
  * @template T
@@ -132,11 +133,30 @@ export const dot = (element, value, name) => direct(element, value, name.slice(1
  * @param {string} name
  * @returns {T}
  */
-export const maybeDirect = (element, value, name) => (
-  value == null ?
-    (removeAttribute(element, name), value) :
-    direct(element, value, name)
-);
+export const hash = (element, value, name) =>
+  direct(element, value, name.slice(1));
+
+/**
+ * @template T
+ * @param {Element} element
+ * @param {T} value
+ * @param {string} name
+ * @returns {T}
+ */
+export const props = (element, value, name) =>
+  directProps(element, value, name.slice(1));
+
+/**
+ * @template T
+ * @param {Element} element
+ * @param {T} value
+ * @param {string} name
+ * @returns {T}
+ */
+export const maybeDirect = (element, value, name) =>
+  value == null
+    ? (removeAttribute(element, name), value)
+    : direct(element, value, name);
 
 /**
  * @template T
@@ -145,8 +165,7 @@ export const maybeDirect = (element, value, name) => (
  * @returns {T}
  */
 export const ref = (element, value) => (
-  (typeof value === 'function' ?
-    value(element) : (value.current = element)),
+  typeof value === "function" ? value(element) : (value.current = element),
   value
 );
 
@@ -158,9 +177,9 @@ export const ref = (element, value) => (
  * @returns {T}
  */
 const regular = (element, value, name) => (
-  (value == null ?
-    removeAttribute(element, name) :
-    setAttribute(element, name, value)),
+  value == null
+    ? removeAttribute(element, name)
+    : setAttribute(element, name, value),
   value
 );
 
@@ -170,11 +189,10 @@ const regular = (element, value, name) => (
  * @param {T} value
  * @returns {T}
  */
-export const style = (element, value) => (
-  value == null ?
-    maybeDirect(element, value, 'style') :
-    direct(element.style, value, 'cssText')
-);
+export const style = (element, value) =>
+  value == null
+    ? maybeDirect(element, value, "style")
+    : direct(element.style, value, "cssText");
 
 /**
  * @template T
@@ -184,8 +202,7 @@ export const style = (element, value) => (
  * @returns {T}
  */
 export const toggle = (element, value, name) => (
-  element.toggleAttribute(name.slice(1), value),
-  value
+  element.toggleAttribute(name.slice(1), value), value
 );
 
 /**
@@ -199,8 +216,7 @@ export const array = (node, value, prev) => {
   // normal diff
   const { length } = value;
   node.data = `[${length}]`;
-  if (length)
-    return udomdiff(node.parentNode, prev, value, diffFragment, node);
+  if (length) return udomdiff(node.parentNode, prev, value, diffFragment, node);
   /* c8 ignore start */
   switch (prev.length) {
     case 1:
@@ -208,11 +224,7 @@ export const array = (node, value, prev) => {
     case 0:
       break;
     default:
-      drop(
-        diffFragment(prev[0], 0),
-        diffFragment(prev.at(-1), -0),
-        false
-      );
+      drop(diffFragment(prev[0], 0), diffFragment(prev.at(-1), -0), false);
       break;
   }
   /* c8 ignore stop */
@@ -220,11 +232,11 @@ export const array = (node, value, prev) => {
 };
 
 export const attr = new Map([
-  ['aria', aria],
-  ['class', className],
-  ['data', data],
-  ['ref', ref],
-  ['style', style],
+  ["aria", aria],
+  ["class", className],
+  ["data", data],
+  ["ref", ref],
+  ["style", style],
 ]);
 
 /**
@@ -235,22 +247,27 @@ export const attr = new Map([
  */
 export const attribute = (element, name, svg) => {
   switch (name[0]) {
-    case '.': return dot;
-    case '?': return toggle;
-    case '@': return at;
-    default: return (
-      svg || ('ownerSVGElement' in element) ?
-        (name === 'ref' ? ref : regular) :
-        (attr.get(name) || (
-          name in element ?
-            (name.startsWith('on') ?
-              direct :
-              (gPD(element, name)?.set ? maybeDirect : regular)
-            ) :
-            regular
-          )
-        )
-    );
+    case "#":
+      return hash;
+    case ".":
+      return props;
+    case "?":
+      return toggle;
+    case "@":
+      return at;
+    default:
+      return svg || "ownerSVGElement" in element
+        ? name === "ref"
+          ? ref
+          : regular
+        : attr.get(name) ||
+            (name in element
+              ? name.startsWith("on")
+                ? direct
+                : gPD(element, name)?.set
+                ? maybeDirect
+                : regular
+              : regular);
   }
 };
 
@@ -261,6 +278,5 @@ export const attribute = (element, name, svg) => {
  * @returns {T}
  */
 export const text = (element, value) => (
-  (element.textContent = value == null ? '' : value),
-  value
+  (element.textContent = value == null ? "" : value), value
 );

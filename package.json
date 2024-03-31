@@ -1,6 +1,6 @@
 {
-  "name": "uhtml",
-  "version": "4.4.9",
+  "name": "@brownhounds/uhtml",
+  "version": "0.1.0",
   "description": "A micro HTML/SVG render",
   "main": "./cjs/index.js",
   "scripts": {
@@ -22,6 +22,12 @@
     "render"
   ],
   "author": "Andrea Giammarchi",
+  "contributors": [
+    {
+      "name": "brownhounds",
+      "url": "https://github.com/brownhounds"
+    }
+  ],
   "license": "MIT",
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.2.3",
@@ -39,39 +45,13 @@
       "import": "./esm/index.js",
       "default": "./cjs/index.js"
     },
-    "./dom": {
-      "types": "./types/dom/index.d.ts",
-      "import": "./esm/dom/index.js",
-      "default": "./cjs/dom/index.js"
-    },
-    "./init": {
-      "types": "./types/init.d.ts",
-      "import": "./esm/init.js",
-      "default": "./cjs/init.js"
-    },
-    "./keyed": {
-      "types": "./types/keyed.d.ts",
-      "import": "./esm/keyed.js",
-      "default": "./cjs/keyed.js"
-    },
     "./node": {
       "types": "./types/node.d.ts",
       "import": "./esm/node.js",
       "default": "./cjs/node.js"
     },
-    "./reactive": {
-      "types": "./types/reactive.d.ts",
-      "import": "./esm/reactive.js",
-      "default": "./cjs/reactive.js"
-    },
-    "./preactive": {
-      "types": "./types/reactive/preact.d.ts",
-      "import": "./esm/reactive/preact.js",
-      "default": "./cjs/reactive/preact.js"
-    },
     "./package.json": "./package.json"
   },
-  "unpkg": "./keyed.js",
   "dependencies": {
     "@webreflection/uparser": "^0.3.3",
     "custom-function": "^1.0.6",
@@ -83,14 +63,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/WebReflection/uhtml.git"
+    "url": "git+https://github.com/brownhounds/uhtml.git"
   },
   "bugs": {
-    "url": "https://github.com/WebReflection/uhtml/issues"
+    "url": "https://github.com/brownhounds/uhtml/issues"
   },
-  "homepage": "https://github.com/WebReflection/uhtml#readme",
-  "optionalDependencies": {
-    "@preact/signals-core": "^1.5.1",
-    "@webreflection/signal": "^2.0.0"
-  }
+  "homepage": "https://github.com/WebReflection/uhtml#readme"
 }
