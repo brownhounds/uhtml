@@ -128,6 +128,24 @@ export const directProps = (ref, value, name) =>
 
 /**
  * @template T
+ * @param {HTMLElement} ref
+ * @param {T} value
+ * @param {string} name
+ * @returns {T}
+ */
+export const directModel = (ref, value, name) => {
+  const handler = (e) => {
+    const { value: inputValue } = e.target;
+    value.current = inputValue;
+  };
+
+  if (!ref.oninput) ref.oninput = handler;
+
+  return (ref[name] = value.current);
+};
+
+/**
+ * @template T
  * @param {Element} element
  * @param {T} value
  * @param {string} name
@@ -145,6 +163,16 @@ export const hash = (element, value, name) =>
  */
 export const props = (element, value, name) =>
   directProps(element, value, name.slice(1));
+
+/**
+ * @template T
+ * @param {Element} element
+ * @param {T} value
+ * @param {string} name
+ * @returns {T}
+ */
+export const model = (element, value, name) =>
+  directModel(element, value, name.slice(1));
 
 /**
  * @template T
@@ -251,6 +279,8 @@ export const attribute = (element, name, svg) => {
       return hash;
     case ".":
       return props;
+    case "~":
+      return model;
     case "?":
       return toggle;
     case "@":
