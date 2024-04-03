@@ -31,8 +31,6 @@ export const aria = (element, value) => {
   return value;
 };
 
-let listeners;
-
 /**
  * @template T
  * @param {Element} element
@@ -42,18 +40,10 @@ let listeners;
  */
 export const at = (element, value, name) => {
   name = name.slice(1);
-  if (!listeners) listeners = new WeakMap();
-  const known = listeners.get(element) || set(listeners, element, {});
-  let current = known[name];
-  if (current && current[0]) element.removeEventListener(name, ...current);
-  current = isArray(value) ? value : [value, false];
-  known[name] = current;
-  if (current[0]) element.addEventListener(name, ...current);
+  const handlerPropertyName = `on${name}`;
+  if (!element[handlerPropertyName]) element[handlerPropertyName] = value;
   return value;
 };
-
-/** @type {WeakMap<Node, Element | import("./persistent-fragment.js").PersistentFragment>} */
-const holes = new WeakMap();
 
 /**
  * @template T
