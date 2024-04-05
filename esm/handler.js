@@ -3,8 +3,6 @@ import { empty, gPD, isArray, set } from "./utils.js";
 import { diffFragment } from "./persistent-fragment.js";
 import drop from "./range.js";
 
-const PROPS_TARGET_PROPERTY_KEY = "$props";
-
 const setAttribute = (element, name, value) =>
   element.setAttribute(name, value);
 
@@ -113,16 +111,6 @@ export const direct = (ref, value, name) => (ref[name] = value);
  * @param {string} name
  * @returns {T}
  */
-export const directProps = (ref, value, name) =>
-  (ref[PROPS_TARGET_PROPERTY_KEY][name] = value);
-
-/**
- * @template T
- * @param {HTMLElement} ref
- * @param {T} value
- * @param {string} name
- * @returns {T}
- */
 export const directModel = (ref, value, name) => {
   const handler = (e) => {
     const { value: inputValue } = e.target;
@@ -151,8 +139,9 @@ export const hash = (element, value, name) =>
  * @param {string} name
  * @returns {T}
  */
-export const props = (element, value, name) =>
-  directProps(element, value, name.slice(1));
+export const props = (element, value, name) => {
+  if (element.$props) return element.$props.set(name.slice(1), value);
+};
 
 /**
  * @template T
